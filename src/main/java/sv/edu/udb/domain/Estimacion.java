@@ -11,6 +11,7 @@ import lombok.Setter;
 @Table(name = "estimacion")
 @Getter @Setter @NoArgsConstructor
 public class Estimacion {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -19,10 +20,6 @@ public class Estimacion {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "medicion_id", nullable = false)
     private Medicion medicion;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "ecuacion", nullable = false, length = 40)
-    private Ecuacion ecuacion;
 
     @NotNull @DecimalMin("0.0")
     @Column(name = "biomasa_kg", nullable = false)
