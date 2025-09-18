@@ -14,7 +14,8 @@ import sv.edu.udb.service.dto.ResultadoParqueResumen;
 @Service
 public class ResultadoParqueServiceImpl implements ResultadoParqueService {
 
-    private static final double TASA_C_KG_POR_M2_ANIO = 0.28;
+    private static final double TASA_CAPTURA_CARBONO_KG_POR_M2_POR_ANIO = 0.28;
+    private static final double KG_POR_TONELADA = 1000.0;
 
     private final ParqueRepository parqueRepository;
     private final EstimacionRepository estimacionRepository;
@@ -32,36 +33,38 @@ public class ResultadoParqueServiceImpl implements ResultadoParqueService {
     @Transactional
     public ResultadoParqueResumen recalcular(Long parqueId, int anio) {
         if (parqueId == null || parqueId <= 0) throw new IllegalArgumentException("parqueId inválido");
-        if (anio <= 0) throw new IllegalArgumentException("año inválido");
+        if (anio <= 0) throw new IllegalArgumentException("anio inválido");
 
         Parque parque = parqueRepository.findById(parqueId)
                 .orElseThrow(() -> new EntityNotFoundException("Parque no encontrado: " + parqueId));
 
-        // Sumar carbono (kg) de estimaciones del año indicado y convertir a toneladas
-        double stockKg = estimacionRepository.findByMedicion_Arbol_Parque_Id(parqueId).stream()
-                .filter(e -> e.getMedicion() != null && e.getMedicion().getFecha() != null
-                        && e.getMedicion().getFecha().getYear() == anio)
-                .mapToDouble(e -> e.getCarbonoKg() == null ? 0.0 : e.getCarbonoKg())
+        // Sumar C (kg) solo del año objetivo
+        double stockCarbonoKg = estimacionRepository.findByMedicion_Arbol_Parque_Id(parqueId).stream()
+                .filter(estimacion -> estimacion.getMedicion() != null
+                        && estimacion.getMedicion().getFecha() != null
+                        && estimacion.getMedicion().getFecha().getYear() == anio)
+                .mapToDouble(estimacion -> estimacion.getCarbonoKg() == null ? 0.0 : estimacion.getCarbonoKg())
                 .sum();
-        double stockT = stockKg / 1000.0;
+        double stockCarbonoT = stockCarbonoKg / KG_POR_TONELADA;
 
-        // Captura anual referencial por área del parque (ha -> m2)
-        double m2 = parque.getAreaHa() * 10_000.0;
-        double capturaCKg = TASA_C_KG_POR_M2_ANIO * m2;
-        double capturaT = capturaCKg / 1000.0;
+        // Captura anual por área (ha → m2)
+        double areaM2 = parque.getAreaHa() * 10_000.0;
+        double capturaCarbonoKg = TASA_CAPTURA_CARBONO_KG_POR_M2_POR_ANIO * areaM2;
+        double capturaCarbonoT = capturaCarbonoKg / KG_POR_TONELADA;
 
-        // Upsert de resultado
-        ResultadoParque entidad = resultadoParqueRepository.findByParque_IdAndAnio(parqueId, anio)
+        // Upsert
+        ResultadoParque resultadoParque = resultadoParqueRepository.findByParque_IdAndAnio(parqueId, anio)
                 .orElseGet(() -> {
-                    ResultadoParque r = new ResultadoParque();
-                    r.setParque(parque);
-                    r.setAnio(anio);
-                    return r;
+                    ResultadoParque resultado = new ResultadoParque();
+                    resultado.setParque(parque);
+                    resultado.setAnio(anio);
+                    return resultado;
                 });
-        entidad.setStockCarbonoT(stockT);
-        entidad.setCapturaAnualT(capturaT);
-        resultadoParqueRepository.save(entidad);
 
-        return new ResultadoParqueResumen(parqueId, anio, stockT, capturaT);
+        resultadoParque.setStockCarbonoT(stockCarbonoT);
+        resultadoParque.setCapturaAnualT(capturaCarbonoT);
+        resultadoParqueRepository.save(resultadoParque);
+
+        return new ResultadoParqueResumen(parqueId, anio, stockCarbonoT, capturaCarbonoT);
     }
 }
