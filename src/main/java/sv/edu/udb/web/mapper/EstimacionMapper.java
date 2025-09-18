@@ -9,7 +9,6 @@ import sv.edu.udb.web.dto.response.EstimacionResponse;
 
 @Mapper(componentModel = "spring")
 public interface EstimacionMapper {
-    EstimacionMapper INSTANCE = Mappers.getMapper(EstimacionMapper.class);
 
     /* Request -> Entity (creación manual) */
     @Mappings({

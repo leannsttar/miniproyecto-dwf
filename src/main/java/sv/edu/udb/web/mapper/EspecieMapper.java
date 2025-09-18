@@ -8,7 +8,6 @@ import sv.edu.udb.web.dto.response.EspecieResponse;
 
 @Mapper(componentModel = "spring")
 public interface EspecieMapper {
-    EspecieMapper INSTANCE = Mappers.getMapper(EspecieMapper.class);
 
     /* Request -> Entity */
     @Mapping(target = "id", ignore = true)

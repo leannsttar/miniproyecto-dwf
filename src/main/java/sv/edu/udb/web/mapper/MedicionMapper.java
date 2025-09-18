@@ -9,7 +9,6 @@ import sv.edu.udb.web.dto.response.MedicionResponse;
 
 @Mapper(componentModel = "spring")
 public interface MedicionMapper {
-    MedicionMapper INSTANCE = Mappers.getMapper(MedicionMapper.class);
 
     /* Request -> Entity */
     @Mappings({
