@@ -131,9 +131,15 @@ import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * @ControllerAdvice indica que esta clase "aconseja" a todos los @Controller.
+ * Aquí centralizamos el manejo de excepciones y formamos respuestas uniformes.
+ */
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
+    // @Valid/@Validated en @RequestBody, @ModelAttribute, etc.
+    //400
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             final MethodArgumentNotValidException ex, final HttpHeaders headers,
@@ -143,7 +149,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     // -------------------------------
-    // Helper para evitar repetición
+    // para no repetir el patrón de construir la respuesta:
+    //  crea un ApiErrorWrapper a partir de la excepción y el status
     // -------------------------------
     private ResponseEntity<Object> buildResponse(Exception ex, HttpStatus status, WebRequest request) {
         return handleExceptionInternal(ex, message(status, ex), new HttpHeaders(), status, request);
@@ -152,31 +159,43 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     // -------------------------------
     // Exception handlers
     // -------------------------------
+    //validaciones manuales o programáticas
+    //400
     @ExceptionHandler({ValidationException.class})
     protected ResponseEntity<Object> handleValidation(final ValidationException ex, final WebRequest request) {
         return buildResponse(ex, HttpStatus.BAD_REQUEST, request);
     }
 
+    //cuando no existe el recurso
+    //404
     @ExceptionHandler({EntityNotFoundException.class})
     protected ResponseEntity<Object> handleNotFound(final EntityNotFoundException ex, final WebRequest request) {
         return buildResponse(ex, HttpStatus.NOT_FOUND, request);
     }
 
+    //errores de acceso a datos (constraint violations, duplicados, etc.)
+    //409
     @ExceptionHandler({DataAccessException.class})
     protected ResponseEntity<Object> handleDataAccess(final DataAccessException ex, final WebRequest request) {
         return buildResponse(ex, HttpStatus.CONFLICT, request);
     }
 
+    //argumentos inválidos
+    //400
     @ExceptionHandler({IllegalArgumentException.class})
     protected ResponseEntity<Object> handleBadRequest(final IllegalArgumentException ex, final WebRequest request) {
         return buildResponse(ex, HttpStatus.BAD_REQUEST, request);
     }
 
+    //AccessDeniedException
+    //403
     @ExceptionHandler({AccessDeniedException.class})
     protected ResponseEntity<Object> handleForbidden(final AccessDeniedException ex, final WebRequest request) {
         return buildResponse(ex, HttpStatus.FORBIDDEN, request);
     }
 
+    //cualquier excepción no contemplada arriba
+    //500
     @ExceptionHandler({Exception.class})
     protected ResponseEntity<Object> handle500(final Exception ex, final WebRequest request) {
         return buildResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR, request);
@@ -185,6 +204,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     // -------------------------------
     // Métodos auxiliares
     // -------------------------------
+
+    /**
+     * Transforma la lista de ObjectError/FieldError de Spring a nuestro formato ApiErrorWrapper.
+     * Para FieldError incluimos el nombre del campo; para errores globales usamos "unknown".
+     */
     protected ApiErrorWrapper processErrors(final List<ObjectError> errors) {
         final ApiErrorWrapper dto = new ApiErrorWrapper();
         errors.forEach(objError -> {
@@ -197,6 +221,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return dto;
     }
 
+    //Construye un ApiError "plano" con status HTTP, título, tipo de excepción y el mensaje.
     protected ApiError buildApiError(final HttpStatus status, final Exception ex) {
         return ApiError.builder()
                 .status(status.value())
@@ -206,12 +231,19 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
     }
 
+    //Crea un ApiErrorWrapper (contenedor) y agrega un ApiError
     protected ApiErrorWrapper message(final HttpStatus status, final Exception ex) {
         final ApiErrorWrapper w = new ApiErrorWrapper();
         w.addApiError(buildApiError(status, ex));
         return w;
     }
 
+    /**
+     * Sobrescribe el método central de construcción de la respuesta.
+     * - Marca la excepción en la request si es 500 (para que otros componentes puedan leerla).
+     * - Si el body viene nulo, fabrica uno usando nuestro formato estándar (ApiErrorWrapper).
+     * - Devuelve ResponseEntity con headers y status recibidos.
+     */
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex, @Nullable Object body,
                                                              HttpHeaders headers,
