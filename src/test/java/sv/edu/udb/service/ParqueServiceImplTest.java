@@ -1,4 +1,4 @@
-package sv.edu.udb.service.impl;
+package sv.edu.udb.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import sv.edu.udb.domain.Parque;
 import sv.edu.udb.repository.ParqueRepository;
+import sv.edu.udb.service.impl.ParqueServiceImpl;
 
 import java.util.List;
 import java.util.Optional;
@@ -98,12 +99,15 @@ class ParqueServiceImplTest {
     @Test
     void delete_ok_invocaRepositorio() {
         // Arrange
+        when(repository.existsById(7L)).thenReturn(true);
         doNothing().when(repository).deleteById(7L);
 
         // Act
         service.delete(7L);
 
         // Assert
+        verify(repository).existsById(7L);
         verify(repository).deleteById(7L);
     }
+
 }

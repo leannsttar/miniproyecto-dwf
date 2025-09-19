@@ -31,7 +31,8 @@ class ArbolServiceImplTest {
     @Autowired ArbolService arbolService;
     @Autowired ParqueRepository parqueRepo;
     @Autowired EspecieRepository especieRepo;
-    @Autowired ArbolRepository arbolRepo;
+    @Autowired
+    ArbolRepository arbolRepo;
 
     private Parque crearParque() {
         Parque p = new Parque();

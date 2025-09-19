@@ -1,4 +1,4 @@
-package sv.edu.udb.web;
+package sv.edu.udb.web.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;

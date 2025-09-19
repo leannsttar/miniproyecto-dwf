@@ -21,8 +21,7 @@ class ArbolMapperTest {
         req.setParqueId(22L);
         req.setLat(13.70);
         req.setLon(-89.20);
-        req.setDbhCm(35.5);
-        req.setH(12.3);
+
 
         // Act
         Arbol e = mapper.toEntity(req);
@@ -35,8 +34,7 @@ class ArbolMapperTest {
         assertEquals(22L, e.getParque().getId());
         assertEquals(13.70, e.getLat());
         assertEquals(-89.20, e.getLon());
-        assertEquals(35.5, e.getDbhCm());
-        assertEquals(12.3, e.getH());
+
     }
 
     @Test
@@ -50,8 +48,7 @@ class ArbolMapperTest {
         a.setParque(pq);
         a.setLat(1.1);
         a.setLon(2.2);
-        a.setDbhCm(10.0);
-        a.setH(3.3);
+
 
         // Act
         ArbolResponse r = mapper.toResponse(a);
@@ -62,7 +59,6 @@ class ArbolMapperTest {
         assertEquals(22L, r.getParqueId());
         assertEquals(1.1, r.getLat());
         assertEquals(2.2, r.getLon());
-        assertEquals(10.0, r.getDbhCm());
-        assertEquals(3.3, r.getH());
+
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.util.WebUtils;
+import sv.edu.udb.configuration.RestExceptionHandler;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
