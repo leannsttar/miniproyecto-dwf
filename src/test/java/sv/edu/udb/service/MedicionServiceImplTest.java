@@ -32,7 +32,8 @@ class MedicionServiceImplTest {
     @Autowired MedicionService medicionService;
     @Autowired ParqueRepository parqueRepo;
     @Autowired EspecieRepository especieRepo;
-    @Autowired ArbolRepository arbolRepo;
+    @Autowired
+    ArbolRepository arbolRepo;
     @Autowired MedicionRepository medicionRepo;
 
     private Arbol crearArbol() {
