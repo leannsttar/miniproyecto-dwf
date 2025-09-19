@@ -32,9 +32,9 @@ public class ResultadoParque {
     @Column(name = "captura_anual_t", nullable = false)
     private Double capturaAnualT;
 
-    @Column(name = "top_especies_json", columnDefinition = "TEXT")
-    private String topEspeciesJson;
-
-    @Column(name = "rango_incertidumbre_porc")
-    private Double rangoIncertidumbrePorc;
+//    @Column(name = "top_especies_json", columnDefinition = "TEXT")
+//    private String topEspeciesJson;
+//
+//    @Column(name = "rango_incertidumbre_porc")
+//    private Double rangoIncertidumbrePorc;
 }

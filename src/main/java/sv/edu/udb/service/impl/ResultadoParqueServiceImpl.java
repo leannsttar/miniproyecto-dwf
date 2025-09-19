@@ -11,6 +11,8 @@ import sv.edu.udb.repository.ResultadoParqueRepository;
 import sv.edu.udb.service.ResultadoParqueService;
 import sv.edu.udb.service.dto.ResultadoParqueResumen;
 
+import java.util.List;
+
 @Service
 public class ResultadoParqueServiceImpl implements ResultadoParqueService {
 
@@ -55,10 +57,10 @@ public class ResultadoParqueServiceImpl implements ResultadoParqueService {
         // Upsert
         ResultadoParque resultadoParque = resultadoParqueRepository.findByParque_IdAndAnio(parqueId, anio)
                 .orElseGet(() -> {
-                    ResultadoParque resultado = new ResultadoParque();
-                    resultado.setParque(parque);
-                    resultado.setAnio(anio);
-                    return resultado;
+                    ResultadoParque r = new ResultadoParque();
+                    r.setParque(parque);
+                    r.setAnio(anio);
+                    return r;
                 });
 
         resultadoParque.setStockCarbonoT(stockCarbonoT);
@@ -66,5 +68,31 @@ public class ResultadoParqueServiceImpl implements ResultadoParqueService {
         resultadoParqueRepository.save(resultadoParque);
 
         return new ResultadoParqueResumen(parqueId, anio, stockCarbonoT, capturaCarbonoT);
+    }
+
+    // ---------- Lecturas (sin recalcular) ----------
+
+    @Override
+    @Transactional(readOnly = true)
+    public ResultadoParqueResumen getByParqueAndAnio(Long parqueId, int anio) {
+        ResultadoParque r = resultadoParqueRepository.findByParque_IdAndAnio(parqueId, anio)
+                .orElseThrow(() -> new EntityNotFoundException("Resultado no encontrado: parque=" + parqueId + ", anio=" + anio));
+        return new ResultadoParqueResumen(r.getParque().getId(), r.getAnio(), r.getStockCarbonoT(), r.getCapturaAnualT());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ResultadoParqueResumen> listAll() {
+        return resultadoParqueRepository.findAll().stream()
+                .map(r -> new ResultadoParqueResumen(r.getParque().getId(), r.getAnio(), r.getStockCarbonoT(), r.getCapturaAnualT()))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ResultadoParqueResumen> listByParque(Long parqueId) {
+        return resultadoParqueRepository.findByParque_Id(parqueId).stream()
+                .map(r -> new ResultadoParqueResumen(r.getParque().getId(), r.getAnio(), r.getStockCarbonoT(), r.getCapturaAnualT()))
+                .toList();
     }
 }
