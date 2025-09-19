@@ -38,7 +38,7 @@ class ResultadoParqueServiceImplTest {
 
     private Especie nuevaEspecie() {
         Especie e = new Especie();
-        e.setNombreCientifico("Cedrela odorata");
+        e.setNombreCientifico("Mi especia odorata");
         e.setNombreComun("Cedro");
         e.setDensidadMaderaRho(new BigDecimal("0.52"));
         e.setFuenteRho("Zanne 2009");
