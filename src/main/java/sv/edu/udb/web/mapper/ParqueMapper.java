@@ -10,12 +10,11 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface ParqueMapper {
 
-    @Mappings({
-            @Mapping(target = "id", ignore = true),
-            @Mapping(target = "creadoEn", ignore = true)
-    })
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "creadoEn", ignore = true)
     Parque toEntity(ParqueRequest request);
 
+    @BeanMapping(unmappedTargetPolicy = ReportingPolicy.IGNORE)
     void update(@MappingTarget Parque target, ParqueRequest request);
 
     List<ParqueResponse> toParqueResponseList(final List<Parque> parqueList);

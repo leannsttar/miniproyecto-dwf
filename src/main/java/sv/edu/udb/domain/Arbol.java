@@ -3,9 +3,7 @@ package sv.edu.udb.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.Instant;
 
@@ -13,7 +11,9 @@ import java.time.Instant;
 @Table(name = "arbol")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class Arbol {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,6 +38,7 @@ public class Arbol {
     @Column(name = "lon")
     private Double lon;
 
+    @Builder.Default
     @Column(name = "creado_en", nullable = false)
     private Instant creadoEn = Instant.now();
 }

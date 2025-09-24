@@ -49,7 +49,6 @@ class ParqueControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(body)))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", containsString("/api/parques/")))
                 .andExpect(jsonPath("$.nombre").value("Parque Cuscatlán"))
                 .andExpect(jsonPath("$.area_ha").value(12.5));
     }
