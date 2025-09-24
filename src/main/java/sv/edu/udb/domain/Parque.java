@@ -4,15 +4,17 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "parque")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Parque {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,6 +41,7 @@ public class Parque {
     @Column(name = "lon")
     private Double lon;
 
+    @Builder.Default
     @Column(name = "creado_en", nullable = false)
     private Instant creadoEn = Instant.now();
 }

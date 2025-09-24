@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -14,7 +12,9 @@ import java.math.BigDecimal;
 @Table(name = "especie", uniqueConstraints = @UniqueConstraint(columnNames = "nombre_cientifico"))
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class Especie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
