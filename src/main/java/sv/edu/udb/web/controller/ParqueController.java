@@ -1,57 +1,49 @@
 package sv.edu.udb.web.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import sv.edu.udb.domain.Parque;
 import sv.edu.udb.service.ParqueService;
 import sv.edu.udb.web.dto.request.ParqueRequest;
 import sv.edu.udb.web.dto.response.ParqueResponse;
-import sv.edu.udb.web.mapper.ParqueMapper;
 
-import java.net.URI;
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/parques")
 public class ParqueController {
 
     private final ParqueService service;
-    private final ParqueMapper mapper;
-
-    public ParqueController(ParqueService service, ParqueMapper mapper) {
-        this.service = service;
-        this.mapper = mapper;
-    }
 
     @GetMapping
-    public List<ParqueResponse> list() {
-        return service.findAll().stream().map(mapper::toResponse).toList();
+    public List<ParqueResponse> findAll() {
+        return service.findAll();
     }
 
-    @GetMapping("/{id}")
-    public ParqueResponse get(@PathVariable Long id) {
-        return mapper.toResponse(service.findById(id));
+    @GetMapping("{id}")
+    public ParqueResponse findById(@PathVariable Long id) {
+        return service.findById(id);
     }
 
     @PostMapping
-    public ResponseEntity<ParqueResponse> create(@Valid @RequestBody ParqueRequest req) {
-        Parque saved = service.create(mapper.toEntity(req));
-        return ResponseEntity
-                .created(URI.create("/api/parques/" + saved.getId()))
-                .body(mapper.toResponse(saved));
+    @ResponseStatus(CREATED)
+    public ParqueResponse save(@Valid @RequestBody ParqueRequest req) {
+        return service.save(req);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("{id}")
     public ParqueResponse update(@PathVariable Long id, @Valid @RequestBody ParqueRequest req) {
-        Parque current = service.findById(id);
-        mapper.update(current, req);
-        return mapper.toResponse(service.update(id, current));
+        return service.update(id, req);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    @DeleteMapping("{id}")
+    @ResponseStatus(NO_CONTENT)
+    public void delete(@PathVariable Long id) {
         service.delete(id);
-        return ResponseEntity.noContent().build();
     }
 }

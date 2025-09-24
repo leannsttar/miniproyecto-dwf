@@ -3,12 +3,13 @@ package sv.edu.udb.service;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import sv.edu.udb.domain.Parque;
 import sv.edu.udb.repository.ParqueRepository;
 import sv.edu.udb.service.impl.ParqueServiceImpl;
+import sv.edu.udb.web.dto.request.ParqueRequest;
+import sv.edu.udb.web.dto.response.ParqueResponse;
+import sv.edu.udb.web.mapper.ParqueMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,19 +18,23 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ParqueServiceImplTest {
+
     @Mock private ParqueRepository repository;
+    @Mock private ParqueMapper mapper;
 
     @InjectMocks private ParqueServiceImpl service;
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+    void setUp() { MockitoAnnotations.openMocks(this); }
 
     @Test
     void findAll_ok_devuelveLista() {
         // Arrange
-        when(repository.findAll()).thenReturn(List.of(new Parque()));
+        Parque e = new Parque();
+        when(repository.findAll()).thenReturn(List.of(e));
+        when(mapper.toParqueResponseList(anyList()))
+                .thenReturn(List.of(ParqueResponse.builder().id(1L).build()));
+
 
         // Act
         var out = service.findAll();
@@ -40,11 +45,12 @@ class ParqueServiceImplTest {
     }
 
     @Test
-    void findById_ok_devuelveEntidad() {
+    void findById_ok_devuelveResponse() {
         // Arrange
-        Parque p = new Parque();
-        p.setId(1L);
-        when(repository.findById(1L)).thenReturn(Optional.of(p));
+        Parque e = new Parque();
+        e.setId(1L);
+        when(repository.findById(1L)).thenReturn(Optional.of(e));
+        when(mapper.toResponse(e)).thenReturn(ParqueResponse.builder().id(1L).build());
 
         // Act
         var out = service.findById(1L);
@@ -52,6 +58,7 @@ class ParqueServiceImplTest {
         // Assert
         assertEquals(1L, out.getId());
         verify(repository).findById(1L);
+        verify(mapper).toResponse(e);
     }
 
     @Test
@@ -62,52 +69,69 @@ class ParqueServiceImplTest {
         // Act + Assert
         assertThrows(EntityNotFoundException.class, () -> service.findById(99L));
         verify(repository).findById(99L);
+        verifyNoInteractions(mapper);
     }
 
     @Test
-    void create_ok_guardaYDevuelve() {
+    void save_ok_guardaYDevuelve() {
         // Arrange
-        Parque p = new Parque();
-        when(repository.save(p)).thenReturn(p);
+        ParqueRequest req = new ParqueRequest();
+        Parque entity = new Parque();
+        Parque saved = new Parque();
+        saved.setId(10L);
+        ParqueResponse res = ParqueResponse.builder().id(10L).build();
+
+        when(mapper.toEntity(req)).thenReturn(entity);
+        when(repository.save(entity)).thenReturn(saved);
+        when(mapper.toResponse(saved)).thenReturn(res);
 
         // Act
-        var out = service.create(p);
+        var out = service.save(req);
 
         // Assert
         assertNotNull(out);
-        verify(repository).save(p);
+        assertEquals(10L, out.getId());
+        verify(mapper).toEntity(req);
+        verify(repository).save(entity);
+        verify(mapper).toResponse(saved);
     }
 
     @Test
     void update_ok_actualizaExistente() {
         // Arrange
-        Parque existente = new Parque();
-        existente.setId(5L);
-        when(repository.findById(5L)).thenReturn(Optional.of(existente));
-        Parque cambios = new Parque();
-        when(repository.save(any(Parque.class))).thenAnswer(a -> a.getArgument(0));
+        Long id = 5L;
+        Parque current = new Parque();
+        current.setId(id);
+        ParqueRequest req = new ParqueRequest();
+        ParqueResponse res = ParqueResponse.builder().id(id).build();
+
+        when(repository.findById(id)).thenReturn(Optional.of(current));
+        when(repository.save(current)).thenReturn(current);
+        when(mapper.toResponse(current)).thenReturn(res);
 
         // Act
-        var out = service.update(5L, cambios);
+        var out = service.update(id, req);
 
         // Assert
         assertNotNull(out);
-        verify(repository).findById(5L);
-        verify(repository).save(any(Parque.class));
+        assertEquals(id, out.getId());
+        verify(repository).findById(id);
+        verify(mapper).update(current, req);
+        verify(repository).save(current);
+        verify(mapper).toResponse(current);
     }
 
     @Test
     void delete_ok_invocaRepositorio() {
         // Arrange
-        when(repository.existsById(7L)).thenReturn(true);
         doNothing().when(repository).deleteById(7L);
 
         // Act
         service.delete(7L);
 
         // Assert
-        verify(repository).existsById(7L);
         verify(repository).deleteById(7L);
+        verifyNoMoreInteractions(repository);
+        verifyNoInteractions(mapper);
     }
-
 }
