@@ -11,9 +11,19 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class EspecieRequest {
-    @NotBlank private String nombreCientifico;
+
+    @NotBlank
+    private String nombreCientifico;
     private String nombreComun;
-    @NotNull @DecimalMin("0.10") @DecimalMax("1.50") private BigDecimal densidadMaderaRho;
-    @NotBlank private String fuenteRho;
-    @NotBlank private String versionRho;
+
+    @NotNull
+    @DecimalMin("0.10")
+    @DecimalMax("1.50")
+    private BigDecimal densidadMaderaRho;
+
+    @NotBlank
+    private String fuenteRho;
+
+    @NotBlank
+    private String versionRho;
 }

@@ -2,7 +2,6 @@ package sv.edu.udb.web.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sv.edu.udb.service.ParqueService;
 import sv.edu.udb.web.dto.request.ParqueRequest;
