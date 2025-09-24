@@ -124,14 +124,30 @@ class ParqueServiceImplTest {
     @Test
     void delete_ok_invocaRepositorio() {
         // Arrange
+        when(repository.existsById(7L)).thenReturn(true);
         doNothing().when(repository).deleteById(7L);
 
         // Act
         service.delete(7L);
 
         // Assert
+        verify(repository).existsById(7L);
         verify(repository).deleteById(7L);
         verifyNoMoreInteractions(repository);
         verifyNoInteractions(mapper);
     }
+
+    @Test
+    void delete_notFound_lanzaEntityNotFound() {
+        // Arrange
+        when(repository.existsById(7L)).thenReturn(false);
+
+        // Act + Assert
+        assertThrows(EntityNotFoundException.class, () -> service.delete(7L));
+
+        verify(repository).existsById(7L);
+        verifyNoMoreInteractions(repository);
+        verifyNoInteractions(mapper);
+    }
+
 }

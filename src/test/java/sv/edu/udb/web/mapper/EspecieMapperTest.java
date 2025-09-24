@@ -29,6 +29,22 @@ class EspecieMapperTest {
     }
 
     @Test
+    void toEspecieResponseList_ok_mapeaLista() {
+        Especie e1 = new Especie(); e1.setId(1L); e1.setNombreCientifico("A"); e1.setNombreComun("CA");
+        Especie e2 = new Especie(); e2.setId(2L); e2.setNombreCientifico("B"); e2.setNombreComun("CB");
+
+        var out = mapper.toEspecieResponseList(java.util.List.of(e1, e2));
+
+        assertNotNull(out);
+        assertEquals(2, out.size());
+        assertEquals(1L, out.get(0).getId());
+        assertEquals("A", out.get(0).getNombreCientifico());
+        assertEquals(2L, out.get(1).getId());
+        assertEquals("B", out.get(1).getNombreCientifico());
+    }
+
+
+    @Test
     void update_ok_actualizaCamposDesdeRequest() {
         // Arrange
         Especie target = new Especie();
@@ -69,4 +85,26 @@ class EspecieMapperTest {
         assertEquals("Caoba", r.getNombreComun());
 
     }
+
+    @Test
+    void update_put_nullDebePisarValor() {
+        // Arrange
+        Especie target = new Especie();
+        target.setId(7L);
+        target.setNombreCientifico("Viejo");
+        target.setNombreComun("ViejoC");
+
+        EspecieRequest req = new EspecieRequest();
+        req.setNombreCientifico(null); // ← debe volverse null en target
+        req.setNombreComun("NuevoC");
+
+        // Act
+        mapper.update(target, req);
+
+        // Assert
+        assertEquals(7L, target.getId());
+        assertNull(target.getNombreCientifico(), "PUT: null del request debe pisar el valor");
+        assertEquals("NuevoC", target.getNombreComun());
+    }
+
 }

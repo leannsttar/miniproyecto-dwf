@@ -1,55 +1,64 @@
 package sv.edu.udb.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.dao.DataIntegrityViolationException;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import sv.edu.udb.domain.Especie;
 import sv.edu.udb.repository.EspecieRepository;
+import sv.edu.udb.repository.ParqueRepository;
 import sv.edu.udb.service.EspecieService;
+import sv.edu.udb.web.dto.request.EspecieRequest;
+import sv.edu.udb.web.dto.response.EspecieResponse;
+import sv.edu.udb.web.mapper.EspecieMapper;
 
 import java.util.List;
 
 @Service
-@Transactional
+@RequiredArgsConstructor
 public class EspecieServiceImpl implements EspecieService {
 
-    private final EspecieRepository repo;
+    @NonNull
+    private final EspecieRepository especieRepository;
 
-    public EspecieServiceImpl(EspecieRepository repo) {
-        this.repo = repo;
-    }
+    @NonNull
+    private final EspecieMapper especieMapper;
+    private final ParqueRepository parqueRepository;
 
-    @Override @Transactional(readOnly = true)
-    public List<Especie> findAll() {
-        return repo.findAll();
-    }
 
-    @Override @Transactional(readOnly = true)
-    public Especie findById(Long id) {
-        return repo.findById(id).orElseThrow(() -> new EntityNotFoundException("Especie no encontrada: " + id));
+    @Override
+    public List<EspecieResponse> findAll() {
+        return especieMapper.toEspecieResponseList(especieRepository.findAll());
     }
 
     @Override
-    public Especie create(Especie e) {
-        if (e.getId()!=null) e.setId(null);
-        return repo.save(e);
+    public EspecieResponse findById(Long id) {
+        final Especie entity = especieRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Especie no encontrada id " + id));
+        return especieMapper.toResponse(entity);
     }
 
     @Override
-    public Especie update(Long id, Especie e) {
-        Especie current = findById(id);
-        current.setNombreCientifico(e.getNombreCientifico());
-        current.setNombreComun(e.getNombreComun());
-        current.setDensidadMaderaRho(e.getDensidadMaderaRho());
-        current.setFuenteRho(e.getFuenteRho());
-        current.setVersionRho(e.getVersionRho());
-        return repo.save(current);
+    public EspecieResponse save(EspecieRequest request) {
+        final Especie entity = especieMapper.toEntity(request);
+        return especieMapper.toResponse(especieRepository.save(entity));
+    }
+
+    @Override
+    public EspecieResponse update(Long id, EspecieRequest request) {
+        final Especie current = especieRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Especie no encontrada id" + id));
+
+        especieMapper.update(current, request);
+
+        return especieMapper.toResponse(especieRepository.save(current));
     }
 
     @Override
     public void delete(Long id) {
-        if (!repo.existsById(id)) throw new EntityNotFoundException("Especie no encontrada: " + id);
-        repo.deleteById(id);
+        if (!especieRepository.existsById(id)) {
+            throw new EntityNotFoundException("Especie no encontrada id " + id);
+        }
+        especieRepository.deleteById(id);
     }
 }

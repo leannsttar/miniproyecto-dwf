@@ -14,7 +14,8 @@ public interface ParqueMapper {
     @Mapping(target = "creadoEn", ignore = true)
     Parque toEntity(ParqueRequest request);
 
-    @BeanMapping(unmappedTargetPolicy = ReportingPolicy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "creadoEn", ignore = true)
     void update(@MappingTarget Parque target, ParqueRequest request);
 
     List<ParqueResponse> toParqueResponseList(final List<Parque> parqueList);

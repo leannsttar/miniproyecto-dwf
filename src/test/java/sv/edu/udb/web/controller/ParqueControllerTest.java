@@ -108,12 +108,15 @@ class ParqueControllerTest {
                 .andExpect(jsonPath("$.nombre").value("PGet"));
     }
 
-    @Test @DisplayName("DELETE /api/parques/{id} - elimina y retorna 204")
+    @Test @DisplayName("DELETE /api/parques/{id} - elimina y retorna 204, 404 si se repitio")
     void delete_ok() throws Exception {
         Parque p = new Parque(); p.setNombre("PDel"); p.setDistrito("DDel"); p.setAreaHa(1.0);
         p = parqueRepo.save(p);
 
         mvc.perform(delete("/api/parques/{id}", p.getId()))
                 .andExpect(status().isNoContent());
+
+        mvc.perform(delete("/api/parques/{id}", p.getId()))
+                .andExpect(status().isNotFound());
     }
 }

@@ -55,6 +55,9 @@ public class ParqueServiceImpl implements ParqueService {
 
     @Override
     public void delete(final Long id) {
+        if (!parqueRepository.existsById(id)) {
+            throw new EntityNotFoundException("Especie no encontrada id " + id);
+        }
         parqueRepository.deleteById(id);
     }
 }
