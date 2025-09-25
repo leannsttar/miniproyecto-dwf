@@ -40,7 +40,7 @@ class ParqueControllerTest {
         var body = Map.of(
                 "nombre", "Parque Cuscatlán",
                 "distrito", "San Salvador Centro",
-                "area_ha", 12.5,
+                "areaHa", 12.5,
                 "lat", 13.698,
                 "lon", -89.191
         );
@@ -50,7 +50,7 @@ class ParqueControllerTest {
                         .content(om.writeValueAsString(body)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.nombre").value("Parque Cuscatlán"))
-                .andExpect(jsonPath("$.area_ha").value(12.5));
+                .andExpect(jsonPath("$.areaHa").value(12.5));
     }
 
     @Test @DisplayName("POST /api/parques - validaciones 400 (NotBlank y área > 0)")
@@ -76,7 +76,7 @@ class ParqueControllerTest {
         var patch = Map.of(
                 "nombre", "Parque Actualizado",
                 "distrito", "Distrito 2",
-                "area_ha", 5.0
+                "areaHa", 5.0
         );
 
         mvc.perform(put("/api/parques/{id}", p.getId())
@@ -85,7 +85,7 @@ class ParqueControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nombre").value("Parque Actualizado"))
                 .andExpect(jsonPath("$.distrito").value("Distrito 2"))
-                .andExpect(jsonPath("$.area_ha").value(5.0));
+                .andExpect(jsonPath("$.areaHa").value(5.0));
     }
 
     @Test @DisplayName("GET /api/parques - lista contiene elementos")

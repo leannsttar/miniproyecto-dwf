@@ -9,8 +9,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ArbolRequest {
-    @NotNull private Long parqueId;
-    @NotNull private Long especieId;
+    @NotNull
+    private Long parqueId;
+
+    @NotNull
+    private Long especieId;
+
     private Double lat;
     private Double lon;
 }

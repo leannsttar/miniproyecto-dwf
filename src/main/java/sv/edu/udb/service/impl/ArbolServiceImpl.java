@@ -1,8 +1,9 @@
 package sv.edu.udb.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import sv.edu.udb.domain.Arbol;
 import sv.edu.udb.domain.Especie;
 import sv.edu.udb.domain.Parque;
@@ -10,48 +11,77 @@ import sv.edu.udb.repository.ArbolRepository;
 import sv.edu.udb.repository.EspecieRepository;
 import sv.edu.udb.repository.ParqueRepository;
 import sv.edu.udb.service.ArbolService;
+import sv.edu.udb.web.dto.request.ArbolRequest;
+import sv.edu.udb.web.dto.response.ArbolResponse;
+import sv.edu.udb.web.mapper.ArbolMapper;
 
 import java.util.List;
 
-@Service @Transactional
+@Service
+@RequiredArgsConstructor
 public class ArbolServiceImpl implements ArbolService {
-    private final ArbolRepository repo;
-    private final ParqueRepository parqueRepo;
-    private final EspecieRepository especieRepo;
 
-    public ArbolServiceImpl(ArbolRepository repo, ParqueRepository parqueRepo, EspecieRepository especieRepo) {
-        this.repo = repo; this.parqueRepo = parqueRepo; this.especieRepo = especieRepo;
-    }
-
-    @Override @Transactional(readOnly = true)
-    public List<Arbol> findAll() { return repo.findAll(); }
-
-    @Override @Transactional(readOnly = true)
-    public Arbol findById(Long id) { return repo.findById(id).orElseThrow(() -> new EntityNotFoundException("Arbol no encontrado: " + id)); }
+    @NonNull private final ArbolRepository arbolRepository;
+    @NonNull private final ParqueRepository parqueRepository;
+    @NonNull private final EspecieRepository especieRepository;
+    @NonNull private final ArbolMapper arbolMapper;
 
     @Override
-    public Arbol create(Arbol a) {
-        if (a.getParque()==null || a.getParque().getId()==null) throw new IllegalArgumentException("parque_id requerido");
-        if (a.getEspecie()==null || a.getEspecie().getId()==null) throw new IllegalArgumentException("especie_id requerido");
-        Parque p = parqueRepo.findById(a.getParque().getId()).orElseThrow(() -> new EntityNotFoundException("Parque no encontrado: " + a.getParque().getId()));
-        Especie e = especieRepo.findById(a.getEspecie().getId()).orElseThrow(() -> new EntityNotFoundException("Especie no encontrada: " + a.getEspecie().getId()));
-        a.setParque(p); a.setEspecie(e);
-        return repo.save(a);
+    public List<ArbolResponse> findAll() {
+        return arbolMapper.toArbolResponseList(arbolRepository.findAll());
     }
 
     @Override
-    public Arbol update(Long id, Arbol a) {
-        Arbol current = findById(id);
-        if (a.getParque()!=null && a.getParque().getId()!=null) {
-            current.setParque(parqueRepo.findById(a.getParque().getId()).orElseThrow(() -> new EntityNotFoundException("Parque no encontrado: " + a.getParque().getId())));
-        }
-        if (a.getEspecie()!=null && a.getEspecie().getId()!=null) {
-            current.setEspecie(especieRepo.findById(a.getEspecie().getId()).orElseThrow(() -> new EntityNotFoundException("Especie no encontrada: " + a.getEspecie().getId())));
-        }
-        current.setLat(a.getLat());
-        current.setLon(a.getLon());
-        return repo.save(current);
+    public ArbolResponse findById(Long id) {
+        Arbol entity = arbolRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Arbol no encontrado id " + id));
+        return arbolMapper.toResponse(entity);
     }
 
-    @Override public void delete(Long id) { if (!repo.existsById(id)) throw new EntityNotFoundException("Arbol no encontrado: " + id); repo.deleteById(id); }
+    @Override
+    public ArbolResponse save(ArbolRequest request) {
+        Arbol entity = arbolMapper.toEntity(request);
+
+        // Validar y adjuntar referenciasz
+        Parque parque = parqueRepository.findById(request.getParqueId())
+                .orElseThrow(() -> new EntityNotFoundException("Parque no encontrado id " + request.getParqueId()));
+        Especie especie = especieRepository.findById(request.getEspecieId())
+                .orElseThrow(() -> new EntityNotFoundException("Especie no encontrada id " + request.getEspecieId()));
+
+        entity.setParque(parque);
+        entity.setEspecie(especie);
+
+        return arbolMapper.toResponse(arbolRepository.save(entity));
+    }
+
+    @Override
+    public ArbolResponse update(Long id, ArbolRequest request) {
+        Arbol current = arbolRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Arbol no encontrado id " + id));
+
+        // Actualiza campos simples (lat/lon)
+        arbolMapper.update(current, request);
+
+        // Si vienen ids de relaciones, validamos y reemplazamos por entidades gestionadas
+        if (request.getParqueId() != null) {
+            Parque parque = parqueRepository.findById(request.getParqueId())
+                    .orElseThrow(() -> new EntityNotFoundException("Parque no encontrado id " + request.getParqueId()));
+            current.setParque(parque);
+        }
+        if (request.getEspecieId() != null) {
+            Especie especie = especieRepository.findById(request.getEspecieId())
+                    .orElseThrow(() -> new EntityNotFoundException("Especie no encontrada id " + request.getEspecieId()));
+            current.setEspecie(especie);
+        }
+
+        return arbolMapper.toResponse(arbolRepository.save(current));
+    }
+
+    @Override
+    public void delete(Long id) {
+        if (!arbolRepository.existsById(id)) {
+            throw new EntityNotFoundException("Arbol no encontrado id " + id);
+        }
+        arbolRepository.deleteById(id);
+    }
 }

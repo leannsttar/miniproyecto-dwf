@@ -36,17 +36,17 @@ class EspecieControllerTest {
     @Test @DisplayName("POST /api/especies - crea especie válida")
     void create_ok() throws Exception {
         var body = Map.of(
-                "nombre_cientifico", "Tabebuia rosea",
-                "nombre_comun", "Roble de sabana",
-                "densidad_madera_rho", new BigDecimal("0.65"),
-                "fuente_rho", "FAO 2022",
-                "version_rho", "v1"
+                "nombreCientifico", "Tabebuia rosea",
+                "nombreComun", "Roble de sabana",
+                "densidadMaderaRho", new BigDecimal("0.65"),
+                "fuenteRho", "FAO 2022",
+                "versionRho", "v1"
         );
         mvc.perform(post("/api/especies")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(body)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.nombre_cientifico").value("Tabebuia rosea"))
+                .andExpect(jsonPath("$.nombreCientifico").value("Tabebuia rosea"))
                 .andExpect(jsonPath("$.id").exists());
         // Nota: no verificamos header Location porque el controlador no lo envía
     }
@@ -68,10 +68,10 @@ class EspecieControllerTest {
     @Test @DisplayName("GET /api/especies - lista contiene elementos")
     void list_ok() throws Exception {
         var body = Map.of(
-                "nombre_cientifico", "Cedrela odorata",
-                "densidad_madera_rho", new BigDecimal("0.52"),
-                "fuente_rho", "FAO",
-                "version_rho", "v1"
+                "nombreCientifico", "Cedrela odorata",
+                "densidadMaderaRho", new BigDecimal("0.52"),
+                "fuenteRho", "FAO",
+                "versionRho", "v1"
         );
         mvc.perform(post("/api/especies")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -80,7 +80,7 @@ class EspecieControllerTest {
 
         mvc.perform(get("/api/especies"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].nombre_cientifico").exists())
+                .andExpect(jsonPath("$[0].nombreCientifico").exists())
                 .andExpect(jsonPath("$", not(org.hamcrest.Matchers.empty())));
     }
 
@@ -94,10 +94,10 @@ class EspecieControllerTest {
     void update_ok() throws Exception {
         // Crear primero y leer id del body
         var body = Map.of(
-                "nombre_cientifico", "Dalbergia retusa",
-                "densidad_madera_rho", new BigDecimal("0.95"),
-                "fuente_rho", "FAO",
-                "version_rho", "v1"
+                "nombreCientifico", "Dalbergia retusa",
+                "densidadMaderaRho", new BigDecimal("0.95"),
+                "fuenteRho", "FAO",
+                "versionRho", "v1"
         );
         var createRes = mvc.perform(post("/api/especies")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -109,26 +109,26 @@ class EspecieControllerTest {
         long id = created.get("id").asLong();
 
         var patch = Map.of(
-                "nombre_cientifico", "Dalbergia retusa (upd)",
-                "densidad_madera_rho", new BigDecimal("0.90"),
-                "fuente_rho", "FAO-upd",
-                "version_rho", "v2"
+                "nombreCientifico", "Dalbergia retusa (upd)",
+                "densidadMaderaRho", new BigDecimal("0.90"),
+                "fuenteRho", "FAO-upd",
+                "versionRho", "v2"
         );
         mvc.perform(put("/api/especies/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(patch)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nombre_cientifico").value("Dalbergia retusa (upd)"))
-                .andExpect(jsonPath("$.fuente_rho").value("FAO-upd"));
+                .andExpect(jsonPath("$.nombreCientifico").value("Dalbergia retusa (upd)"))
+                .andExpect(jsonPath("$.fuenteRho").value("FAO-upd"));
     }
 
     @Test @DisplayName("PUT /api/especies/{id} - 404 si no existe")
     void update_404() throws Exception {
         var patch = Map.of(
-                "nombre_cientifico", "X",
-                "densidad_madera_rho", new BigDecimal("0.6"),
-                "fuente_rho", "FAO",
-                "version_rho", "v1"
+                "nombreCientifico", "X",
+                "densidadMaderaRho", new BigDecimal("0.6"),
+                "fuenteRho", "FAO",
+                "versionRho", "v1"
         );
         mvc.perform(put("/api/especies/{id}", 999)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -139,10 +139,10 @@ class EspecieControllerTest {
     @Test @DisplayName("DELETE /api/especies/{id} - 204 y 404 si repito")
     void delete_ok_then_404() throws Exception {
         var body = Map.of(
-                "nombre_cientifico", "ToDelete",
-                "densidad_madera_rho", new BigDecimal("0.6"),
-                "fuente_rho", "FAO",
-                "version_rho", "v1"
+                "nombreCientifico", "ToDelete",
+                "densidadMaderaRho", new BigDecimal("0.6"),
+                "fuenteRho", "FAO",
+                "versionRho", "v1"
         );
         var createRes = mvc.perform(post("/api/especies")
                         .contentType(MediaType.APPLICATION_JSON)

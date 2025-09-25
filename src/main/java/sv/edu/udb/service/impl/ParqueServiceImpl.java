@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import sv.edu.udb.domain.Parque;
 import sv.edu.udb.repository.ParqueRepository;
 import sv.edu.udb.service.ParqueService;

@@ -66,10 +66,10 @@ class MedicionControllerTest {
     @Test @DisplayName("POST /api/mediciones - crea ok")
     void create_ok() throws Exception {
         Arbol a = mkArbol();
-        var body = Map.of("arbol_id", a.getId(), "fecha", "2025-01-01", "dbh_cm", 30.0, "altura_m", 15.0, "observaciones", "OK");
+        var body = Map.of("arbolId", a.getId(), "fecha", "2025-01-01", "dbhCm", 30.0, "alturaM", 15.0, "observaciones", "OK");
         mvc.perform(post("/api/mediciones").contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsString(body)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.arbol_id").value(a.getId()));
+                .andExpect(jsonPath("$.arbolId").value(a.getId()));
     }
 
     @Test @DisplayName("POST /api/mediciones - 400 por validaciones (fecha futura, campos null)")
@@ -86,7 +86,7 @@ class MedicionControllerTest {
         Arbol a = mkArbol();
         mvc.perform(post("/api/mediciones")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(Map.of("arbol_id", a.getId(), "fecha", "2025-01-01", "dbh_cm", 10.0, "altura_m", 5.0))))
+                        .content(om.writeValueAsString(Map.of("arbolId", a.getId(), "fecha", "2025-01-01", "dbhCm", 10.0, "alturaM", 5.0))))
                 .andExpect(status().isCreated());
 
         mvc.perform(get("/api/mediciones"))
@@ -105,17 +105,17 @@ class MedicionControllerTest {
         Arbol a = mkArbol();
         var created = mvc.perform(post("/api/mediciones")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(Map.of("arbol_id", a.getId(), "fecha", "2025-01-01", "dbh_cm", 10.0, "altura_m", 5.0))))
+                        .content(om.writeValueAsString(Map.of("arbolId", a.getId(), "fecha", "2025-01-01", "dbhCm", 10.0, "alturaM", 5.0))))
                 .andReturn();
         String id = created.getResponse().getHeader("Location").replace("/api/mediciones/", "");
 
-        var patch = Map.of("arbol_id", a.getId(), "fecha", "2025-01-10", "dbh_cm", 12.0, "altura_m", 6.0);
+        var patch = Map.of("arbolId", a.getId(), "fecha", "2025-01-10", "dbhCm", 12.0, "alturaM", 6.0);
         mvc.perform(put("/api/mediciones/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(patch)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.dbh_cm").value(12.0))
-                .andExpect(jsonPath("$.altura_m").value(6.0));
+                .andExpect(jsonPath("$.dbhCm").value(12.0))
+                .andExpect(jsonPath("$.alturaM").value(6.0));
     }
 
     @Test @DisplayName("DELETE /api/mediciones/{id} - ok y luego 404")
@@ -123,7 +123,7 @@ class MedicionControllerTest {
         Arbol a = mkArbol();
         var created = mvc.perform(post("/api/mediciones")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(Map.of("arbol_id", a.getId(), "fecha", "2025-01-01", "dbh_cm", 10.0, "altura_m", 5.0))))
+                        .content(om.writeValueAsString(Map.of("arbolId", a.getId(), "fecha", "2025-01-01", "dbhCm", 10.0, "alturaM", 5.0))))
                 .andReturn();
         String id = created.getResponse().getHeader("Location").replace("/api/mediciones/", "");
 

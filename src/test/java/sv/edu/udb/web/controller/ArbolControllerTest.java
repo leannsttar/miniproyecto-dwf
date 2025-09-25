@@ -1,4 +1,4 @@
-package sv.edu.udb.web;
+package sv.edu.udb.web.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import sv.edu.udb.domain.Especie;
 import sv.edu.udb.domain.Parque;
 import sv.edu.udb.repository.EspecieRepository;
@@ -16,44 +17,33 @@ import sv.edu.udb.repository.ParqueRepository;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/**
- * ArbolController:
- * - POST ok y 400 por faltantes
- * - GET list, GET id, 404 id inexistente
- * - PUT cambio de especie y coords
- * - DELETE ok y 404
- */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 class ArbolControllerTest {
 
-    @Autowired
-    MockMvc mvc;
-    @Autowired
-    ObjectMapper om;
-    @Autowired
-    ParqueRepository parqueRepo;
-    @Autowired
-    EspecieRepository especieRepo;
+    @Autowired MockMvc mvc;
+    @Autowired ObjectMapper om;
+    @Autowired ParqueRepository parqueRepo;
+    @Autowired EspecieRepository especieRepo;
 
-    private Parque mkParque() {
+    private Parque crearParque() {
         Parque p = new Parque();
-        p.setNombre("P-" + UUID.randomUUID().toString().substring(0, 8)); // nombre único
-        p.setDistrito("D");
+        p.setNombre("Parque Central");
+        p.setDistrito("Distrito 1");
         p.setAreaHa(1.0);
         return parqueRepo.save(p);
     }
 
-    private Especie mkEspecieUnique(String base, String rho) {
+    private Especie crearEspecie(String nombreCientifico, String rho) {
         Especie e = new Especie();
-        e.setNombreCientifico(base + "_" + UUID.randomUUID().toString().substring(0, 8)); // nombre científico único
+        e.setNombreCientifico(nombreCientifico);
         e.setDensidadMaderaRho(new BigDecimal(rho));
         e.setFuenteRho("FAO");
         e.setVersionRho("v1");
@@ -63,22 +53,31 @@ class ArbolControllerTest {
     @Test
     @DisplayName("POST /api/arboles - crea ok")
     void create_ok() throws Exception {
-        var p = mkParque();
-        var e = mkEspecieUnique("Cedrela", "0.52");
+        var parque = crearParque();
+        var especie = crearEspecie("Cedrela odorata", "0.52");
 
-        var body = Map.of("parque_id", p.getId(), "especie_id", e.getId(), "lat", 13.7, "lon", -89.2);
+        var body = Map.of(
+                "parqueId", parque.getId(),
+                "especieId", especie.getId(),
+                "lat", 13.7,
+                "lon", -89.2
+        );
+
         mvc.perform(post("/api/arboles")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(body)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.parque_id").value(p.getId()))
-                .andExpect(jsonPath("$.especie_id").value(e.getId()));
+                .andExpect(jsonPath("$.parqueId").value(parque.getId()))
+                .andExpect(jsonPath("$.especieId").value(especie.getId()))
+                .andExpect(jsonPath("$.lat").value(13.7))
+                .andExpect(jsonPath("$.lon").value(-89.2));
     }
 
     @Test
-    @DisplayName("POST /api/arboles - 400 si faltan refs")
+    @DisplayName("POST /api/arboles - 400 si faltan refs requeridas")
     void create_400_missingRefs() throws Exception {
-        var body = Map.of("lat", 13.7, "lon", -89.2);
+        var body = Map.of("lat", 13.7, "lon", -89.2); // faltan parqueId y especieId
+
         mvc.perform(post("/api/arboles")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(body)))
@@ -88,10 +87,18 @@ class ArbolControllerTest {
     @Test
     @DisplayName("GET /api/arboles - lista no vacía")
     void list_ok() throws Exception {
-        var p = mkParque();
-        var e = mkEspecieUnique("Cedrela", "0.52");
-        var body = Map.of("parque_id", p.getId(), "especie_id", e.getId());
-        mvc.perform(post("/api/arboles").contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsString(body)))
+        var parque = crearParque();
+        var especie = crearEspecie("Swietenia macrophylla", "0.60");
+
+        // crear uno para asegurar lista no vacía
+        mvc.perform(post("/api/arboles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(Map.of(
+                                "parqueId", parque.getId(),
+                                "especieId", especie.getId(),
+                                "lat", 1.0,
+                                "lon", 2.0
+                        ))))
                 .andExpect(status().isCreated());
 
         mvc.perform(get("/api/arboles"))
@@ -107,25 +114,30 @@ class ArbolControllerTest {
     }
 
     @Test
-    @DisplayName("PUT /api/arboles/{id} - cambia especie y coords")
+    @DisplayName("PUT /api/arboles/{id} - actualiza especie y coords")
     void update_ok() throws Exception {
-        var p = mkParque();
-        var e1 = mkEspecieUnique("Cedrela", "0.52");
-        var e2 = mkEspecieUnique("Tabebuia_rosea", "0.65");
+        var parque = crearParque();
+        var especie1 = crearEspecie("Cedrela odorata", "0.52");
+        var especie2 = crearEspecie("Tabebuia rosea", "0.65");
 
-        var created = mvc.perform(post("/api/arboles")
+        // crear
+        var createRes = mvc.perform(post("/api/arboles")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(Map.of(
-                                "parque_id", p.getId(),
-                                "especie_id", e1.getId(),
-                                "lat", 1.0, "lon", 2.0))))
+                                "parqueId", parque.getId(),
+                                "especieId", especie1.getId(),
+                                "lat", 1.0,
+                                "lon", 2.0
+                        ))))
+                .andExpect(status().isCreated())
                 .andReturn();
-        String id = created.getResponse().getHeader("Location").replace("/api/arboles/", "");
 
-        // 🔧 Incluir parque_id para cumplir @NotNull del DTO
+        long id = om.readTree(createRes.getResponse().getContentAsString()).get("id").asLong();
+
+        // actualizar (el DTO tiene @NotNull para parqueId/especieId)
         var patch = Map.of(
-                "parque_id", p.getId(),
-                "especie_id", e2.getId(),
+                "parqueId", parque.getId(),
+                "especieId", especie2.getId(),
                 "lat", 9.0,
                 "lon", 8.0
         );
@@ -134,24 +146,32 @@ class ArbolControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(patch)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.especie_id").value(e2.getId()))
+                .andExpect(jsonPath("$.especieId").value(especie2.getId()))
                 .andExpect(jsonPath("$.lat").value(9.0))
                 .andExpect(jsonPath("$.lon").value(8.0));
     }
 
-
     @Test
-    @DisplayName("DELETE /api/arboles/{id} - ok y luego 404")
+    @DisplayName("DELETE /api/arboles/{id} - 204 y luego 404")
     void delete_ok_then_404() throws Exception {
-        var p = mkParque();
-        var e = mkEspecieUnique("X", "0.60");
+        var parque = crearParque();
+        var especie = crearEspecie("Pinus oocarpa", "0.55");
+
         var res = mvc.perform(post("/api/arboles")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(Map.of("parque_id", p.getId(), "especie_id", e.getId()))))
+                        .content(om.writeValueAsString(Map.of(
+                                "parqueId", parque.getId(),
+                                "especieId", especie.getId()
+                        ))))
+                .andExpect(status().isCreated())
                 .andReturn();
-        String id = res.getResponse().getHeader("Location").replace("/api/arboles/", "");
 
-        mvc.perform(delete("/api/arboles/{id}", id)).andExpect(status().isNoContent());
-        mvc.perform(delete("/api/arboles/{id}", id)).andExpect(status().isNotFound());
+        long id = om.readTree(res.getResponse().getContentAsString()).get("id").asLong();
+
+        mvc.perform(delete("/api/arboles/{id}", id))
+                .andExpect(status().isNoContent());
+
+        mvc.perform(delete("/api/arboles/{id}", id))
+                .andExpect(status().isNotFound());
     }
 }
