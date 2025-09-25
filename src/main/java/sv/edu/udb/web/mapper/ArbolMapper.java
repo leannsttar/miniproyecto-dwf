@@ -2,36 +2,30 @@ package sv.edu.udb.web.mapper;
 
 import org.mapstruct.*;
 import sv.edu.udb.domain.Arbol;
-import sv.edu.udb.domain.Especie;
-import sv.edu.udb.domain.Parque;
 import sv.edu.udb.web.dto.request.ArbolRequest;
 import sv.edu.udb.web.dto.response.ArbolResponse;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ArbolMapper {
 
-    /* Request -> Entity */
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "parque",  expression = "java(parqueFromId(request.getParqueId()))")
-    @Mapping(target = "especie", expression = "java(especieFromId(request.getEspecieId()))")
-    // creadoEn lo deja por defecto (Instant.now()) -> no lo toques
+    @Mapping(target = "parque.id", source = "parqueId")
+    @Mapping(target = "especie.id", source = "especieId")
+    @Mapping(target = "creadoEn", ignore = true)
     Arbol toEntity(ArbolRequest request);
 
-    /* Update (PUT/PATCH): ignora nulls */
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    default void update(@MappingTarget Arbol entity, ArbolRequest request) {
-        if (request.getParqueId() != null)  entity.setParque(parqueFromId(request.getParqueId()));
-        if (request.getEspecieId() != null) entity.setEspecie(especieFromId(request.getEspecieId()));
-        if (request.getLat() != null)       entity.setLat(request.getLat());
-        if (request.getLon() != null)       entity.setLon(request.getLon());
-    }
+//    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "parque.id", source = "parqueId")
+    @Mapping(target = "especie.id", source = "especieId")
+    @Mapping(target = "creadoEn", ignore = true)
+    void update(@MappingTarget Arbol target, ArbolRequest request);
 
-    /* Entity -> Response */
-    @Mapping(target = "parqueId",  source = "parque.id")
+    List<ArbolResponse> toArbolResponseList(List<Arbol> arbolList);
+
+    @Mapping(target = "parqueId", source = "parque.id")
     @Mapping(target = "especieId", source = "especie.id")
     ArbolResponse toResponse(Arbol entity);
-
-    /* Helpers (no consultan BD; solo setean id) */
-    default Parque parqueFromId(Long id) { if (id == null) return null; Parque p = new Parque(); p.setId(id); return p; }
-    default Especie especieFromId(Long id) { if (id == null) return null; Especie e = new Especie(); e.setId(id); return e; }
 }

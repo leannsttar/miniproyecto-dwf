@@ -87,18 +87,18 @@ class EstimacionControllerTest {
     void createManual_ok() throws Exception {
         Medicion m = mkMedicion();
         var body = Map.of(
-                "medicion_id", m.getId(),
-                "biomasa_kg", 100.0,
-                "carbono_kg", 47.0,
-                "co2e_kg", 172.33,
-                "fraccion_carbono", 0.47
+                "medicionId", m.getId(),
+                "biomasaKg", 100.0,
+                "carbonoKg", 47.0,
+                "co2eKg", 172.33,
+                "fraccionCarbono", 0.47
         );
         mvc.perform(post("/api/estimaciones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(body)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.medicion_id").value(m.getId()))
-                .andExpect(jsonPath("$.carbono_kg").value(47.0));
+                .andExpect(jsonPath("$.medicionId").value(m.getId()))
+                .andExpect(jsonPath("$.carbonoKg").value(47.0));
     }
 
     @Test
@@ -125,15 +125,15 @@ class EstimacionControllerTest {
         // OK
         mvc.perform(post("/api/estimaciones/desde-medicion")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(Map.of("medicion_id", m.getId(), "fraccion_carbono", 0.47))))
+                        .content(om.writeValueAsString(Map.of("medicionId", m.getId(), "fraccionCarbono", 0.47))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.medicion_id").value(m.getId()));
+                .andExpect(jsonPath("$.medicionId").value(m.getId()));
 
         // 404
         mvc.perform(post("/api/estimaciones/desde-medicion")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(Map.of("medicion_id", 9999, "fraccion_carbono", 0.47))))
+                        .content(om.writeValueAsString(Map.of("medicionId", 9999, "fraccionCarbono", 0.47))))
                 .andExpect(status().isNotFound());
     }
 
@@ -143,7 +143,7 @@ class EstimacionControllerTest {
         Medicion m = mkMedicion();
         var res = mvc.perform(post("/api/estimaciones")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(Map.of("medicion_id", m.getId(), "biomasa_kg", 10.0, "carbono_kg", 4.7, "co2e_kg", 17.233, "fraccion_carbono", 0.47))))
+                        .content(om.writeValueAsString(Map.of("medicionId", m.getId(), "biomasaKg", 10.0, "carbonoKg", 4.7, "co2eKg", 17.233, "fraccionCarbono", 0.47))))
                 .andReturn();
         String id = res.getResponse().getHeader("Location").replace("/api/estimaciones/", "");
 
@@ -160,7 +160,7 @@ class EstimacionControllerTest {
         Medicion m = mkMedicion();
         var res = mvc.perform(post("/api/estimaciones")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(Map.of("medicion_id", m.getId(), "biomasa_kg", 10.0, "carbono_kg", 4.7, "co2e_kg", 17.233, "fraccion_carbono", 0.47))))
+                        .content(om.writeValueAsString(Map.of("medicionId", m.getId(), "biomasaKg", 10.0, "carbonoKg", 4.7, "co2eKg", 17.233, "fraccionCarbono", 0.47))))
                 .andReturn();
         String id = res.getResponse().getHeader("Location").replace("/api/estimaciones/", "");
 
