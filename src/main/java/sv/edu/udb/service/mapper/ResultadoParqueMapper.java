@@ -1,22 +1,20 @@
 package sv.edu.udb.service.mapper;
 
 import org.mapstruct.Mapper;
-import sv.edu.udb.repository.domain.ResultadoParque;
-import sv.edu.udb.service.dto.ResultadoParqueResumen;
+import org.mapstruct.Mapping;
 import sv.edu.udb.controller.response.ResultadoParqueResponse;
+import sv.edu.udb.repository.domain.ResultadoParque;
 
 import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ResultadoParqueMapper {
 
-    // Ya lo tenías:
-    ResultadoParqueResponse toResponse(ResultadoParqueResumen dto);
-
-    // Nuevo: mapear directamente una entidad persistida a response
+    @Mapping(target = "parqueId", source = "parque.id")
+    @Mapping(target = "anio", source = "anio")
+    @Mapping(target = "stockCarbonoT", source = "stockCarbonoT")
+    @Mapping(target = "capturaAnualT", source = "capturaAnualT")
     ResultadoParqueResponse toResponse(ResultadoParque entity);
 
-    // MapStruct genera estos automáticamente, pero los declaramos por claridad
-    List<ResultadoParqueResponse> toResponse(List<ResultadoParque> entities);
-    List<ResultadoParqueResponse> toResponseFromResumen(List<ResultadoParqueResumen> dtos);
+    List<ResultadoParqueResponse> toResponseList(List<ResultadoParque> entities);
 }

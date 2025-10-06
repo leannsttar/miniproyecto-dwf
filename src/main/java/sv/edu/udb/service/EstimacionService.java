@@ -1,12 +1,13 @@
 package sv.edu.udb.service;
 
-import sv.edu.udb.repository.domain.Estimacion;
+import sv.edu.udb.controller.request.EstimacionDesdeMedicionRequest;
+import sv.edu.udb.controller.response.EstimacionResponse;
+
 import java.util.List;
 
 public interface EstimacionService {
-    List<Estimacion> findAll();
-    Estimacion findById(Long id);
-    Estimacion create(Estimacion e);
-    Estimacion createFromMedicion(Long medicionId, Double fraccionCarbono);
+    List<EstimacionResponse> findAll();
+    EstimacionResponse findById(Long id);
+    EstimacionResponse createDesdeMedicion(EstimacionDesdeMedicionRequest req);
     void delete(Long id);
 }

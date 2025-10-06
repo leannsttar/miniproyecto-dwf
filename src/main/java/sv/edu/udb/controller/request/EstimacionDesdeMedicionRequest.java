@@ -1,13 +1,15 @@
 package sv.edu.udb.controller.request;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Data
-@Getter
-@Setter
 public class EstimacionDesdeMedicionRequest {
-    private Long medicionId;       // requerido en controller con @NotNull si prefieres
-    private Double fraccionCarbono; // opcional; si null usa 0.47
+    @NotNull
+    private Long medicionId;
+
+    // opcional; si null usa 0.47
+    @DecimalMin("0.0")
+    private Double fraccionCarbono;
 }

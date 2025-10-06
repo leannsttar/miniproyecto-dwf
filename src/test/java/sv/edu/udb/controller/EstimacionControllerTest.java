@@ -24,48 +24,32 @@ import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/**
- * EstimacionController:
- * - POST manual ok y 400
- * - POST desde medición ok y 404 si mId inexistente
- * - GET list / get/{id}
- * - DELETE ok y 404
- */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class EstimacionControllerTest {
 
-    @Autowired
-    MockMvc mvc;
-    @Autowired
-    ObjectMapper om;
-    @Autowired
-    ParqueRepository parqueRepo;
-    @Autowired
-    EspecieRepository especieRepo;
-    @Autowired
-    ArbolRepository arbolRepo;
-    @Autowired
-    MedicionRepository medicionRepo;
+    @Autowired MockMvc mvc;
+    @Autowired ObjectMapper om;
+    @Autowired ParqueRepository parqueRepo;
+    @Autowired EspecieRepository especieRepo;
+    @Autowired ArbolRepository arbolRepo;
+    @Autowired MedicionRepository medicionRepo;
 
     private Medicion mkMedicion() {
-        // Parque "genérico"
         Parque p = new Parque();
-        p.setNombre("P-" + System.nanoTime()); // también único por si acaso
+        p.setNombre("P-" + System.nanoTime());
         p.setDistrito("D");
         p.setAreaHa(1.0);
         parqueRepo.save(p);
 
-        // Especie con nombre único para no violar la restricción UNIQUE(nombre_cientifico)
         Especie e = new Especie();
-        e.setNombreCientifico("Cedrela_" + java.util.UUID.randomUUID()); // ← único
+        e.setNombreCientifico("Cedrela_" + java.util.UUID.randomUUID());
         e.setDensidadMaderaRho(new java.math.BigDecimal("0.60"));
         e.setFuenteRho("FAO");
         e.setVersionRho("v1");
         especieRepo.save(e);
 
-        // Árbol y medición baseø
         Arbol a = new Arbol();
         a.setParque(p);
         a.setEspecie(e);
@@ -77,42 +61,6 @@ class EstimacionControllerTest {
         m.setDbhCm(30.0);
         m.setAlturaM(15.0);
         return medicionRepo.save(m);
-    }
-
-
-    @Test
-    @DisplayName("POST /api/estimaciones - manual ok")
-    void createManual_ok() throws Exception {
-        Medicion m = mkMedicion();
-        var body = Map.of(
-                "medicionId", m.getId(),
-                "biomasaKg", 100.0,
-                "carbonoKg", 47.0,
-                "co2eKg", 172.33,
-                "fraccionCarbono", 0.47
-        );
-        mvc.perform(post("/api/estimaciones")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(body)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.medicionId").value(m.getId()))
-                .andExpect(jsonPath("$.carbonoKg").value(47.0));
-    }
-
-    @Test
-    @DisplayName("POST /api/estimaciones - manual 400 por valores inválidos")
-    void createManual_400() throws Exception {
-        var invalid = Map.of(
-                "medicion_id", 1,
-                "biomasa_kg", -1.0,
-                "carbono_kg", -1.0,
-                "co2e_kg", -1.0,
-                "fraccion_carbono", -0.1
-        );
-        mvc.perform(post("/api/estimaciones")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(invalid)))
-                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -139,28 +87,40 @@ class EstimacionControllerTest {
     @DisplayName("GET /api/estimaciones - lista y GET por id")
     void list_and_get() throws Exception {
         Medicion m = mkMedicion();
-        var res = mvc.perform(post("/api/estimaciones")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(Map.of("medicionId", m.getId(), "biomasaKg", 10.0, "carbonoKg", 4.7, "co2eKg", 17.233, "fraccionCarbono", 0.47))))
-                .andReturn();
-        String id = res.getResponse().getHeader("Location").replace("/api/estimaciones/", "");
 
-        mvc.perform(get("/api/estimaciones")).andExpect(status().isOk())
+        var res = mvc.perform(post("/api/estimaciones/desde-medicion")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(Map.of("medicionId", m.getId(), "fraccionCarbono", 0.47))))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        // Parsear ID desde el JSON
+        String json = res.getResponse().getContentAsString();
+        long id = om.readTree(json).get("id").asLong();
+
+        mvc.perform(get("/api/estimaciones"))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$", not(org.hamcrest.Matchers.empty())));
 
-        mvc.perform(get("/api/estimaciones/{id}", id)).andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(Long.parseLong(id)));
+        mvc.perform(get("/api/estimaciones/{id}", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.medicionId").value(m.getId()));
     }
 
     @Test
     @DisplayName("DELETE /api/estimaciones/{id} - ok y luego 404")
     void delete_ok_then_404() throws Exception {
         Medicion m = mkMedicion();
-        var res = mvc.perform(post("/api/estimaciones")
+
+        var res = mvc.perform(post("/api/estimaciones/desde-medicion")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(Map.of("medicionId", m.getId(), "biomasaKg", 10.0, "carbonoKg", 4.7, "co2eKg", 17.233, "fraccionCarbono", 0.47))))
+                        .content(om.writeValueAsString(Map.of("medicionId", m.getId(), "fraccionCarbono", 0.47))))
+                .andExpect(status().isCreated())
                 .andReturn();
-        String id = res.getResponse().getHeader("Location").replace("/api/estimaciones/", "");
+
+        String json = res.getResponse().getContentAsString();
+        long id = om.readTree(json).get("id").asLong();
 
         mvc.perform(delete("/api/estimaciones/{id}", id)).andExpect(status().isNoContent());
         mvc.perform(delete("/api/estimaciones/{id}", id)).andExpect(status().isNotFound());
