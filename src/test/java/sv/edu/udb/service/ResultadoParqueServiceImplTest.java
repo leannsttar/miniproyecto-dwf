@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import sv.edu.udb.controller.response.ResultadoParqueResponse;
 import sv.edu.udb.repository.*;
 import sv.edu.udb.repository.domain.*;
-import sv.edu.udb.service.dto.ResultadoParqueResumen;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,7 +30,7 @@ class ResultadoParqueServiceImplTest {
     // -------- Helpers ----------
     private Parque nuevoParque(double areaHa) {
         Parque p = new Parque();
-        p.setNombre("Parque Test");
+        p.setNombre("Parque Test " + System.nanoTime());
         p.setDistrito("Centro");
         p.setAreaHa(areaHa);
         return parqueRepository.save(p);
@@ -38,7 +38,7 @@ class ResultadoParqueServiceImplTest {
 
     private Especie nuevaEspecie() {
         Especie e = new Especie();
-        e.setNombreCientifico("Mi especia odorata");
+        e.setNombreCientifico("Mi_especie_odorata_" + java.util.UUID.randomUUID()); // único
         e.setNombreComun("Cedro");
         e.setDensidadMaderaRho(new BigDecimal("0.52"));
         e.setFuenteRho("Zanne 2009");
@@ -92,13 +92,15 @@ class ResultadoParqueServiceImplTest {
         var m3_2024 = nuevaMedicion(a, 2024, 11, 20, 28.0, 14.0);
         nuevaEstimacion(m3_2024, 380.0, 178.6, 654.2);
 
-        ResultadoParqueResumen r = resultadoService.recalcular(p.getId(), 2025);
+        ResultadoParqueResponse r = resultadoService.recalcular(p.getId(), 2025);
 
         // Captura para 1 ha: 0.28 kg/m²·año * 10,000 m² = 2800 kg = 2.8 t
         assertEquals(2.8, r.getCapturaAnualT(), 1e-9);
 
         // Stock: solo 2025 → (206.440 + 220.900) / 1000 t
-        assertEquals((206.440 + 220.900)/1000.0, r.getStockCarbonoT(), 1e-9);
+        assertEquals((206.440 + 220.900) / 1000.0, r.getStockCarbonoT(), 1e-9);
+        assertEquals(p.getId(), r.getParqueId());
+        assertEquals(2025, r.getAnio());
     }
 
     @Test
@@ -106,10 +108,12 @@ class ResultadoParqueServiceImplTest {
     @DisplayName("Parque sin estimaciones: stock = 0, captura según área")
     void parqueSinEstimaciones() {
         Parque p = nuevoParque(2.0); // 2 ha ⇒ 20,000 m²
-        ResultadoParqueResumen r = resultadoService.recalcular(p.getId(), 2025);
+        ResultadoParqueResponse r = resultadoService.recalcular(p.getId(), 2025);
         assertEquals(0.0, r.getStockCarbonoT(), 1e-9);
         // 0.28 * 20,000 / 1000 = 5.6 t
         assertEquals(5.6, r.getCapturaAnualT(), 1e-9);
+        assertEquals(p.getId(), r.getParqueId());
+        assertEquals(2025, r.getAnio());
     }
 
     @Test
@@ -138,6 +142,8 @@ class ResultadoParqueServiceImplTest {
         assertEquals(r1.getParqueId(), r2.getParqueId());
         assertEquals(r1.getAnio(), r2.getAnio());
         assertEquals(countAfterFirst, countAfterSecond, "No debe crear duplicados");
+        // y el stock debe haber aumentado
+        assertTrue(r2.getStockCarbonoT() > r1.getStockCarbonoT());
     }
 
     @Test
@@ -152,6 +158,7 @@ class ResultadoParqueServiceImplTest {
     void parametrosInvalidos() {
         assertThrows(IllegalArgumentException.class, () -> resultadoService.recalcular(0L, 2025));
         assertThrows(IllegalArgumentException.class, () -> resultadoService.recalcular(1L, 0));
+        assertThrows(IllegalArgumentException.class, () -> resultadoService.recalcular(null, 2025));
     }
 
     @Test

@@ -1,17 +1,20 @@
 package sv.edu.udb.service;
 
-import sv.edu.udb.service.dto.ResultadoParqueResumen;
+import sv.edu.udb.controller.response.ResultadoParqueResponse;
 
 import java.util.List;
 
 public interface ResultadoParqueService {
 
-    ResultadoParqueResumen recalcular(Long parqueId, int anio);
+    /** Calcula y guarda el resultado de un parque para un año. */
+    ResultadoParqueResponse recalcular(Long parqueId, int anio);
 
-    // ---- Lecturas:
-    ResultadoParqueResumen getByParqueAndAnio(Long parqueId, int anio);
+    /** Obtiene el resultado de un parque para un año */
+    ResultadoParqueResponse findByParqueAndAnio(Long parqueId, int anio);
 
-    List<ResultadoParqueResumen> listAll();
+    /** Lista todos los resultados */
+    List<ResultadoParqueResponse> findAll();
 
-    List<ResultadoParqueResumen> listByParque(Long parqueId);
+    /** Lista los resultados de un parque por año */
+    List<ResultadoParqueResponse> findByParque(Long parqueId);
 }

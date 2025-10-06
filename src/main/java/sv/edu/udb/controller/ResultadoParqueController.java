@@ -1,52 +1,42 @@
-// src/main/java/sv/edu/udb/web/controller/ResultadoParqueController.java
 package sv.edu.udb.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import sv.edu.udb.service.ResultadoParqueService;
 import sv.edu.udb.controller.request.RecalculoResultadoRequest;
 import sv.edu.udb.controller.response.ResultadoParqueResponse;
-import sv.edu.udb.service.mapper.ResultadoParqueMapper;
+import sv.edu.udb.service.ResultadoParqueService;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/resultados")
 public class ResultadoParqueController {
 
     private final ResultadoParqueService service;
-    private final ResultadoParqueMapper mapper;
 
-    public ResultadoParqueController(ResultadoParqueService service, ResultadoParqueMapper mapper) {
-        this.service = service;
-        this.mapper = mapper;
-    }
-
-    // ------- POST: recalcular y guardar/upsert -------
+    /** POST: recalcular (upsert) y devolver el resultado recalculado */
     @PostMapping("/recalcular")
-    public ResponseEntity<ResultadoParqueResponse> recalcular(@Valid @RequestBody RecalculoResultadoRequest req) {
-        var resumen = service.recalcular(req.getParqueId(), req.getAnio());
-        return ResponseEntity.ok(mapper.toResponse(resumen));
+    public ResultadoParqueResponse recalcular(@Valid @RequestBody RecalculoResultadoRequest req) {
+        return service.recalcular(req.getParqueId(), req.getAnio());
     }
 
-    // ------- GETs de lectura -------
-
-    /** Lista todos los resultados guardados */
+    /** GET: todos los resultados */
     @GetMapping
     public List<ResultadoParqueResponse> listAll() {
-        return mapper.toResponseFromResumen(service.listAll());
+        return service.findAll();
     }
 
-    /** Lista todos los resultados de un parque */
+    /** GET: resultados de un parque (todos los años) */
     @GetMapping("/parque/{parqueId}")
     public List<ResultadoParqueResponse> listByParque(@PathVariable Long parqueId) {
-        return mapper.toResponseFromResumen(service.listByParque(parqueId));
+        return service.findByParque(parqueId);
     }
 
-    /** Obtiene el resultado de (parqueId, anio) */
+    /** GET: resultado puntual de (parque, año) */
     @GetMapping("/{parqueId}/{anio}")
     public ResultadoParqueResponse getByParqueAndAnio(@PathVariable Long parqueId, @PathVariable int anio) {
-        return mapper.toResponse(service.getByParqueAndAnio(parqueId, anio));
+        return service.findByParqueAndAnio(parqueId, anio);
     }
 }
