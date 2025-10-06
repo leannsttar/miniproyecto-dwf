@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import sv.edu.udb.domain.*;
 import sv.edu.udb.repository.*;
-import sv.edu.udb.service.impl.CalculoServiceImpl;
-import sv.edu.udb.service.impl.EstimacionServiceImpl;
+import sv.edu.udb.repository.domain.*;
+import sv.edu.udb.service.implementation.CalculoServiceImpl;
+import sv.edu.udb.service.implementation.EstimacionServiceImpl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

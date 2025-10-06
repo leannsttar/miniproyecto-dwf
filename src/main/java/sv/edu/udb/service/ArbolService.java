@@ -1,8 +1,7 @@
 package sv.edu.udb.service;
 
-import sv.edu.udb.domain.Arbol;
-import sv.edu.udb.web.dto.request.ArbolRequest;
-import sv.edu.udb.web.dto.response.ArbolResponse;
+import sv.edu.udb.controller.request.ArbolRequest;
+import sv.edu.udb.controller.response.ArbolResponse;
 
 import java.util.List;
 

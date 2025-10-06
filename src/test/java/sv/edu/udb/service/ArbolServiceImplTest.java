@@ -7,15 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import sv.edu.udb.domain.Especie;
-import sv.edu.udb.domain.Parque;
+import sv.edu.udb.repository.domain.Especie;
+import sv.edu.udb.repository.domain.Parque;
 import sv.edu.udb.repository.ArbolRepository;
 import sv.edu.udb.repository.EspecieRepository;
 import sv.edu.udb.repository.ParqueRepository;
-import sv.edu.udb.service.impl.ArbolServiceImpl;
-import sv.edu.udb.web.dto.request.ArbolRequest;
-import sv.edu.udb.web.dto.response.ArbolResponse;
-import sv.edu.udb.web.mapper.ArbolMapperImpl;
+import sv.edu.udb.service.implementation.ArbolServiceImpl;
+import sv.edu.udb.controller.request.ArbolRequest;
+import sv.edu.udb.controller.response.ArbolResponse;
+import sv.edu.udb.service.mapper.ArbolMapperImpl;
 
 import java.math.BigDecimal;
 

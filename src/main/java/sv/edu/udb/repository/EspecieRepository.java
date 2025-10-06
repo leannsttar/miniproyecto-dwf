@@ -1,7 +1,7 @@
 package sv.edu.udb.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import sv.edu.udb.domain.Especie;
+import sv.edu.udb.repository.domain.Especie;
 
 import java.util.Optional;
 

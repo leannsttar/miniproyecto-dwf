@@ -4,12 +4,12 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
-import sv.edu.udb.domain.Parque;
+import sv.edu.udb.repository.domain.Parque;
 import sv.edu.udb.repository.ParqueRepository;
-import sv.edu.udb.service.impl.ParqueServiceImpl;
-import sv.edu.udb.web.dto.request.ParqueRequest;
-import sv.edu.udb.web.dto.response.ParqueResponse;
-import sv.edu.udb.web.mapper.ParqueMapper;
+import sv.edu.udb.service.implementation.ParqueServiceImpl;
+import sv.edu.udb.controller.request.ParqueRequest;
+import sv.edu.udb.controller.response.ParqueResponse;
+import sv.edu.udb.service.mapper.ParqueMapper;
 
 import java.util.List;
 import java.util.Optional;

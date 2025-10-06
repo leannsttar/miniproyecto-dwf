@@ -1,7 +1,7 @@
 package sv.edu.udb.service;
 
-import sv.edu.udb.web.dto.request.ParqueRequest;
-import sv.edu.udb.web.dto.response.ParqueResponse;
+import sv.edu.udb.controller.request.ParqueRequest;
+import sv.edu.udb.controller.response.ParqueResponse;
 
 import java.util.List;
 
