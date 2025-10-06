@@ -1,12 +1,14 @@
 package sv.edu.udb.service;
 
-import sv.edu.udb.domain.Medicion;
+import sv.edu.udb.controller.request.MedicionRequest;
+import sv.edu.udb.controller.response.MedicionResponse;
+
 import java.util.List;
 
 public interface MedicionService {
-    List<Medicion> findAll();
-    Medicion findById(Long id);
-    Medicion create(Medicion m);
-    Medicion update(Long id, Medicion m);
+    List<MedicionResponse> findAll();
+    MedicionResponse findById(Long id);
+    MedicionResponse save(MedicionRequest request);
+    MedicionResponse update(Long id, MedicionRequest request);
     void delete(Long id);
 }

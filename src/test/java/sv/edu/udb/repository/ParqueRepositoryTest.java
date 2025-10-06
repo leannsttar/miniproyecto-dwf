@@ -3,7 +3,7 @@ package sv.edu.udb.repository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import sv.edu.udb.domain.Parque;
+import sv.edu.udb.repository.domain.Parque;
 
 import static org.junit.jupiter.api.Assertions.*;
 

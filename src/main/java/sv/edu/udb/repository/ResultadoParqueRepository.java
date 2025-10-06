@@ -1,7 +1,7 @@
 package sv.edu.udb.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import sv.edu.udb.domain.ResultadoParque;
+import sv.edu.udb.repository.domain.ResultadoParque;
 
 import java.util.List;
 import java.util.Optional;

@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-import sv.edu.udb.domain.*;
 import sv.edu.udb.repository.*;
+import sv.edu.udb.repository.domain.*;
 import sv.edu.udb.service.dto.ResultadoParqueResumen;
 
 import java.math.BigDecimal;

@@ -1,7 +1,7 @@
 package sv.edu.udb.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import sv.edu.udb.domain.Estimacion;
+import sv.edu.udb.repository.domain.Estimacion;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
 package sv.edu.udb.service;
 
-import sv.edu.udb.domain.Estimacion;
+import sv.edu.udb.repository.domain.Estimacion;
 import java.util.List;
 
 public interface EstimacionService {

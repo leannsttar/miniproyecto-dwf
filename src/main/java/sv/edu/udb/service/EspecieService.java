@@ -1,8 +1,7 @@
 package sv.edu.udb.service;
 
-import sv.edu.udb.domain.Especie;
-import sv.edu.udb.web.dto.request.EspecieRequest;
-import sv.edu.udb.web.dto.response.EspecieResponse;
+import sv.edu.udb.controller.request.EspecieRequest;
+import sv.edu.udb.controller.response.EspecieResponse;
 
 import java.util.List;
 

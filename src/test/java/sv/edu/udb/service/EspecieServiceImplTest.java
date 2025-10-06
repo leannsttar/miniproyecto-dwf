@@ -4,13 +4,13 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
-import sv.edu.udb.domain.Especie;
+import sv.edu.udb.repository.domain.Especie;
 import sv.edu.udb.repository.EspecieRepository;
 import sv.edu.udb.repository.ParqueRepository;
-import sv.edu.udb.service.impl.EspecieServiceImpl;
-import sv.edu.udb.web.dto.request.EspecieRequest;
-import sv.edu.udb.web.dto.response.EspecieResponse;
-import sv.edu.udb.web.mapper.EspecieMapper;
+import sv.edu.udb.service.implementation.EspecieServiceImpl;
+import sv.edu.udb.controller.request.EspecieRequest;
+import sv.edu.udb.controller.response.EspecieResponse;
+import sv.edu.udb.service.mapper.EspecieMapper;
 
 import java.util.List;
 import java.util.Optional;
