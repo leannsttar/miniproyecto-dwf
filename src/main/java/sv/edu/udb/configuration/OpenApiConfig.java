@@ -1,13 +1,22 @@
 package sv.edu.udb.configuration;
 
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
+// 3. Define el esquema de seguridad que se usará
+@SecurityScheme(
+        name = "bearerAuth", // Un nombre interno para referenciarlo
+        type = SecuritySchemeType.HTTP, // El tipo de seguridad
+        scheme = "bearer", // El esquema a usar (Bearer Token)
+        bearerFormat = "JWT" // Un hint para la UI sobre el formato del token
+)
 @Configuration
 public class OpenApiConfig {
+
     @Bean
     public OpenAPI apiInfo() {
         return new OpenAPI()
@@ -21,30 +30,6 @@ public class OpenApiConfig {
                     (captura referencial: 0.28 kg C/m²/año).
                 """));
     }
-    @Bean
-    GroupedOpenApi catalogos() {
-        return GroupedOpenApi.builder()
-                .group("Catálogos")
-                .pathsToMatch("/api/parques/**", "/api/especies/**")
-                .build();
-    }
-
-    @Bean
-    GroupedOpenApi muestreo() {
-        return GroupedOpenApi.builder()
-                .group("Muestreo")
-                .pathsToMatch("/api/arboles/**", "/api/mediciones/**")
-                .build();
-    }
-
-    @Bean
-    GroupedOpenApi calculoResultados() {
-        return GroupedOpenApi.builder()
-                .group("Cálculo & Resultados")
-                .pathsToMatch("/api/estimaciones/**", "/api/resultados/**")
-                .build();
-    }
-
 
 
 
